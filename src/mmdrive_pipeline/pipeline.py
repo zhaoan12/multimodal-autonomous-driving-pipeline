@@ -1,10 +1,18 @@
-"""High-level orchestration helpers for validation and QA generation."""
+"""High-level orchestration helpers for analytics, validation, and QA generation."""
 
 from __future__ import annotations
 
+from mmdrive_pipeline.analytics import summarize_dataset
 from mmdrive_pipeline.data import load_scene_collection
 from mmdrive_pipeline.qa import filter_generated_pairs, generate_scene_qa
 from mmdrive_pipeline.validation import validate_scene_projection
+
+
+def run_scene_analysis_pipeline(dataset_manifest: str) -> list[dict[str, object]]:
+    """Run dataset analytics over all scenes in a manifest."""
+
+    scenes = load_scene_collection(dataset_manifest)
+    return [metrics.to_dict() for metrics in summarize_dataset(scenes)]
 
 
 def run_validation_pipeline(
@@ -63,4 +71,3 @@ def run_qa_generation_pipeline(
             item["rejection_reasons"] = filtered.rejection_reasons
         payload.append(item)
     return payload
-
