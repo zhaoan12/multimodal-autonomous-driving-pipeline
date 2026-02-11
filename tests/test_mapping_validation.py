@@ -23,6 +23,8 @@ class MappingValidationTests(unittest.TestCase):
         self.assertEqual(len(mappings), 3)
         self.assertEqual(mappings[0].support_count, 3)
         self.assertEqual(mappings[0].lidar_point_xyz, (10.0, -1.1, 0.4))
+        self.assertGreaterEqual(mappings[0].depth_std, 0.0)
+        self.assertGreater(mappings[0].support_density, 0.0)
 
     def test_validation_report_matches_sample_scene(self) -> None:
         scene = load_scene("data/sample/scene_0001.json")

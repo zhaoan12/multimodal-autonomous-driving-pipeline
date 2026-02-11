@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import sqrt
 from statistics import median
 
 from mmdrive_pipeline.data.models import Detection2D, LabeledScene
@@ -18,12 +19,19 @@ class DetectionMapping:
     camera_point_xyz: tuple[float, float, float]
     support_count: int
     depth: float
+    depth_std: float
+    support_density: float
 
 
 def _point_in_bbox(pixel_xy: tuple[float, float], bbox_xyxy: tuple[float, float, float, float]) -> bool:
     x, y = pixel_xy
     x1, y1, x2, y2 = bbox_xyxy
     return x1 <= x <= x2 and y1 <= y <= y2
+
+
+def _bbox_area(bbox_xyxy: tuple[float, float, float, float]) -> float:
+    x1, y1, x2, y2 = bbox_xyxy
+    return max(0.0, x2 - x1) * max(0.0, y2 - y1)
 
 
 def map_detection_to_world(
@@ -56,6 +64,10 @@ def map_detection_to_world(
     lidar_support = [projection.points[index].point_xyz_lidar for index in support_indices]
     representative_camera = tuple(median(point[axis] for point in camera_support) for axis in range(3))
     representative_lidar = tuple(median(point[axis] for point in lidar_support) for axis in range(3))
+    depths = [point[2] for point in camera_support]
+    mean_depth = sum(depths) / len(depths)
+    depth_variance = sum((depth - mean_depth) ** 2 for depth in depths) / len(depths)
+    bbox_area = _bbox_area(detection.bbox_xyxy)
 
     return DetectionMapping(
         detection=detection,
@@ -63,6 +75,8 @@ def map_detection_to_world(
         camera_point_xyz=tuple(float(value) for value in representative_camera),
         support_count=len(support_indices),
         depth=float(representative_camera[2]),
+        depth_std=float(sqrt(depth_variance)),
+        support_density=(len(support_indices) / bbox_area) if bbox_area else 0.0,
     )
 
 
