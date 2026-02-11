@@ -1,0 +1,4 @@
+{
+  "calibration_path": "configs/calibration.example.json",
+  "output_path": "data/generated/calibration_diagnostics.json"
+}

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from math import atan, degrees, sqrt
 from pathlib import Path
 
 from mmdrive_pipeline.data.models import CameraIntrinsics, Extrinsics
@@ -15,6 +16,20 @@ class CalibrationBundle:
 
     intrinsics: CameraIntrinsics
     lidar_to_camera: Extrinsics
+
+
+@dataclass(slots=True)
+class CalibrationDiagnostics:
+    """Human-readable calibration sanity-check summary."""
+
+    horizontal_fov_deg: float
+    vertical_fov_deg: float
+    translation_norm_m: float
+    source_frame: str
+    target_frame: str
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
 
 
 def validate_rotation_matrix(
@@ -76,3 +91,20 @@ def load_calibration(path: str | Path) -> CalibrationBundle:
         target_frame=extrinsics_cfg.get("target_frame", "camera"),
     )
     return CalibrationBundle(intrinsics=intrinsics, lidar_to_camera=extrinsics)
+
+
+def diagnose_calibration(bundle: CalibrationBundle) -> CalibrationDiagnostics:
+    """Summarize focal geometry and frame transform scale."""
+
+    intrinsics = bundle.intrinsics
+    extrinsics = bundle.lidar_to_camera
+    horizontal_fov = 2.0 * degrees(atan(intrinsics.width / (2.0 * intrinsics.fx)))
+    vertical_fov = 2.0 * degrees(atan(intrinsics.height / (2.0 * intrinsics.fy)))
+    translation_norm = sqrt(sum(value * value for value in extrinsics.translation))
+    return CalibrationDiagnostics(
+        horizontal_fov_deg=horizontal_fov,
+        vertical_fov_deg=vertical_fov,
+        translation_norm_m=translation_norm,
+        source_frame=extrinsics.source_frame,
+        target_frame=extrinsics.target_frame,
+    )

@@ -2,6 +2,8 @@
 
 from mmdrive_pipeline.geometry.calibration import (
     CalibrationBundle,
+    CalibrationDiagnostics,
+    diagnose_calibration,
     load_calibration,
     validate_rotation_matrix,
 )
@@ -19,9 +21,11 @@ from mmdrive_pipeline.geometry.transforms import invert_extrinsics, transform_po
 
 __all__ = [
     "CalibrationBundle",
+    "CalibrationDiagnostics",
     "ProjectionDiagnostics",
     "ProjectionResult",
     "compute_reprojection_residuals",
+    "diagnose_calibration",
     "invert_extrinsics",
     "load_calibration",
     "project_lidar_to_image",
