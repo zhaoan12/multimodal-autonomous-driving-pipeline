@@ -1,5 +1,6 @@
 """Question-answer generation and filtering modules."""
 
+from mmdrive_pipeline.qa.context import SceneContext, build_scene_context
 from mmdrive_pipeline.qa.generator import (
     MockQAGeneratorBackend,
     generate_scene_qa,
@@ -17,6 +18,8 @@ __all__ = [
     "MockQAGeneratorBackend",
     "QAGenerationRecord",
     "QAPair",
+    "SceneContext",
+    "build_scene_context",
     "filter_generated_pairs",
     "generate_scene_qa",
     "render_scene_prompt",
