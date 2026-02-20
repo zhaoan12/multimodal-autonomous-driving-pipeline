@@ -1,0 +1,6 @@
+{
+  "dataset_manifest": "data/sample/scene_manifest.json",
+  "train_ratio": 0.0,
+  "val_ratio": 0.0,
+  "output_path": "data/generated/dataset_split.json"
+}
