@@ -18,6 +18,7 @@ class ObjectValidationResult:
     matched: bool
     distance_error: float | None
     support_count: int
+    failure_reason: str | None = None
 
 
 @dataclass(slots=True)
@@ -28,6 +29,8 @@ class SceneValidationReport:
     matched_objects: int
     total_objects: int
     mean_distance_error: float | None
+    grounding_rate: float
+    failure_breakdown: dict[str, int]
     results: list[ObjectValidationResult]
 
     @property
@@ -57,6 +60,11 @@ def validate_scene_projection(
     results: list[ObjectValidationResult] = []
     matched_objects = 0
     distance_errors: list[float] = []
+    grounded_objects = 0
+    failure_breakdown = {
+        "not-grounded": 0,
+        "distance-out-of-tolerance": 0,
+    }
 
     mapping_index = {
         match[0]: (mapping, match[2])
@@ -76,15 +84,21 @@ def validate_scene_projection(
                     matched=False,
                     distance_error=None,
                     support_count=0,
+                    failure_reason="not-grounded",
                 )
             )
+            failure_breakdown["not-grounded"] += 1
             continue
 
         mapping, label_position = mapping_entry
+        grounded_objects += 1
         error = dist(mapping.lidar_point_xyz, label_position)
         matched = error <= distance_tolerance_m
         matched_objects += int(matched)
         distance_errors.append(error)
+        failure_reason = None if matched else "distance-out-of-tolerance"
+        if failure_reason is not None:
+            failure_breakdown[failure_reason] += 1
         results.append(
             ObjectValidationResult(
                 object_id=scene_object.object_id,
@@ -92,6 +106,7 @@ def validate_scene_projection(
                 matched=matched,
                 distance_error=error,
                 support_count=mapping.support_count,
+                failure_reason=failure_reason,
             )
         )
 
@@ -103,6 +118,9 @@ def validate_scene_projection(
         matched_objects=matched_objects,
         total_objects=len([obj for obj in scene.objects if obj.detection is not None]),
         mean_distance_error=mean_distance_error,
+        grounding_rate=(grounded_objects / len([obj for obj in scene.objects if obj.detection is not None]))
+        if [obj for obj in scene.objects if obj.detection is not None]
+        else 0.0,
+        failure_breakdown=failure_breakdown,
         results=results,
     )
-

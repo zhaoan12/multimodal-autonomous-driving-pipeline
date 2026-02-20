@@ -35,6 +35,8 @@ def run_validation_pipeline(
                 "scene_id": report.scene_id,
                 "match_rate": report.match_rate,
                 "mean_distance_error": report.mean_distance_error,
+                "grounding_rate": report.grounding_rate,
+                "failure_breakdown": report.failure_breakdown,
                 "matched_objects": report.matched_objects,
                 "total_objects": report.total_objects,
                 "results": [
@@ -44,6 +46,7 @@ def run_validation_pipeline(
                         "matched": item.matched,
                         "distance_error": item.distance_error,
                         "support_count": item.support_count,
+                        "failure_reason": item.failure_reason,
                     }
                     for item in report.results
                 ],

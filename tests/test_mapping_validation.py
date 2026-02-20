@@ -35,6 +35,9 @@ class MappingValidationTests(unittest.TestCase):
         self.assertEqual(report.total_objects, 3)
         self.assertEqual(report.match_rate, 1.0)
         self.assertEqual(report.mean_distance_error, 0.0)
+        self.assertEqual(report.grounding_rate, 1.0)
+        self.assertEqual(report.failure_breakdown["not-grounded"], 0)
+        self.assertEqual(report.failure_breakdown["distance-out-of-tolerance"], 0)
 
 
 if __name__ == "__main__":
