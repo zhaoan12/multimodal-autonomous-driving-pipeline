@@ -26,6 +26,7 @@ class QAPipelineTests(unittest.TestCase):
         self.assertEqual(filtered.rejection_reasons, [])
         self.assertEqual(record.pairs[0].question_type, "grounding")
         self.assertEqual(record.pairs[1].question_type, "spatial-relation")
+        self.assertIsNotNone(filtered.mean_consistency_score)
 
     def test_filter_rejects_duplicates_and_ungrounded_pairs(self) -> None:
         scene = load_scene("data/sample/scene_0001.json")
@@ -59,6 +60,7 @@ class QAPipelineTests(unittest.TestCase):
 
         self.assertEqual(len(filtered.kept_pairs), 1)
         self.assertEqual(filtered.rejection_reasons, ["duplicate-question", "not-grounded-in-scene"])
+        self.assertGreater(filtered.mean_consistency_score or 0.0, 0.0)
 
 
 if __name__ == "__main__":

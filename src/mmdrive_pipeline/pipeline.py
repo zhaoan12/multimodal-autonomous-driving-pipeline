@@ -72,5 +72,6 @@ def run_qa_generation_pipeline(
             item["filtered_pairs"] = [pair.to_dict() for pair in filtered.kept_pairs]
             item["rejected_pairs"] = [pair.to_dict() for pair in filtered.rejected_pairs]
             item["rejection_reasons"] = filtered.rejection_reasons
+            item["mean_consistency_score"] = filtered.mean_consistency_score
         payload.append(item)
     return payload
