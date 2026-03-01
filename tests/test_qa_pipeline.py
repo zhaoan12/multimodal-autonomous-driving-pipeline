@@ -24,6 +24,8 @@ class QAPipelineTests(unittest.TestCase):
         self.assertEqual(len(record.pairs), 3)
         self.assertEqual(len(filtered.kept_pairs), 3)
         self.assertEqual(filtered.rejection_reasons, [])
+        self.assertEqual(record.pairs[0].question_type, "grounding")
+        self.assertEqual(record.pairs[1].question_type, "spatial-relation")
 
     def test_filter_rejects_duplicates_and_ungrounded_pairs(self) -> None:
         scene = load_scene("data/sample/scene_0001.json")
@@ -36,16 +38,19 @@ class QAPipelineTests(unittest.TestCase):
                     question="Where is car_01?",
                     answer="car_01 is ahead.",
                     rationale="car_01 is in the labels.",
+                    question_type="grounding",
                 ),
                 QAPair(
                     question="Where is car_01?",
                     answer="Repeated question.",
                     rationale="duplicate",
+                    question_type="grounding",
                 ),
                 QAPair(
                     question="What color is the sky?",
                     answer="Purple.",
                     rationale="Not in the scene.",
+                    question_type="attribute",
                 ),
             ],
         )

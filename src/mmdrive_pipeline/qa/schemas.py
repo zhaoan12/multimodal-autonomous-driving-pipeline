@@ -13,6 +13,8 @@ class QAPair:
     question: str
     answer: str
     rationale: str
+    question_type: str = "grounding"
+    difficulty: str = "basic"
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -35,4 +37,3 @@ class QAGenerationRecord:
             "provider": self.provider,
             "pairs": [pair.to_dict() for pair in self.pairs],
         }
-
