@@ -5,6 +5,7 @@ from __future__ import annotations
 from mmdrive_pipeline.analytics import summarize_dataset
 from mmdrive_pipeline.data import load_scene_collection
 from mmdrive_pipeline.qa import filter_generated_pairs, generate_scene_qa
+from mmdrive_pipeline.reporting import compile_experiment_report
 from mmdrive_pipeline.validation import validate_scene_projection
 
 
@@ -13,6 +14,32 @@ def run_scene_analysis_pipeline(dataset_manifest: str) -> list[dict[str, object]
 
     scenes = load_scene_collection(dataset_manifest)
     return [metrics.to_dict() for metrics in summarize_dataset(scenes)]
+
+
+def run_experiment_report_pipeline(
+    dataset_manifest: str,
+    distance_tolerance_m: float = 2.0,
+    min_support_points: int = 3,
+    num_pairs: int = 5,
+) -> dict[str, object]:
+    """Run all primary pipelines and compile an aggregate report."""
+
+    analytics_reports = run_scene_analysis_pipeline(dataset_manifest)
+    validation_reports = run_validation_pipeline(
+        dataset_manifest=dataset_manifest,
+        distance_tolerance_m=distance_tolerance_m,
+        min_support_points=min_support_points,
+    )
+    qa_reports = run_qa_generation_pipeline(
+        dataset_manifest=dataset_manifest,
+        num_pairs=num_pairs,
+        filter_output=True,
+    )
+    return compile_experiment_report(
+        analytics_reports=analytics_reports,
+        validation_reports=validation_reports,
+        qa_reports=qa_reports,
+    ).to_dict()
 
 
 def run_validation_pipeline(
