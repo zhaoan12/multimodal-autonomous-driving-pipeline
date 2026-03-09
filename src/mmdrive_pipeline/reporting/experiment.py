@@ -45,3 +45,19 @@ def compile_experiment_report(
         mean_consistency_score=_mean(consistency_scores),
         mean_visible_point_ratio=_mean(visible_ratios),
     )
+
+
+def render_experiment_report_markdown(report: ExperimentReport) -> str:
+    """Render a compact markdown summary for GitHub-friendly reporting."""
+
+    return "\n".join(
+        [
+            "# Experiment Summary",
+            "",
+            f"- Scene count: {report.scene_count}",
+            f"- Mean match rate: {report.mean_match_rate}",
+            f"- Mean grounding rate: {report.mean_grounding_rate}",
+            f"- Mean QA consistency score: {report.mean_consistency_score}",
+            f"- Mean visible point ratio: {report.mean_visible_point_ratio}",
+        ]
+    )
