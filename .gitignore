@@ -1,0 +1,10 @@
+.pytest_cache/
+__pycache__/
+.coverage
+.venv/
+build/
+dist/
+*.egg-info/
+*.pyc
+data/generated/
+
