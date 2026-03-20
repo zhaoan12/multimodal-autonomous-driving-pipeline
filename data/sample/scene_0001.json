@@ -1,0 +1,86 @@
+{
+  "scene_id": "scene_0001",
+  "image_path": "images/scene_0001_front.png",
+  "metadata": {
+    "source": "synthetic-sample",
+    "weather": "clear",
+    "time_of_day": "day"
+  },
+  "camera_intrinsics": {
+    "fx": 1200.0,
+    "fy": 1200.0,
+    "cx": 960.0,
+    "cy": 540.0,
+    "width": 1920,
+    "height": 1080
+  },
+  "lidar_to_camera": {
+    "rotation": [
+      [0.0, -1.0, 0.0],
+      [0.0, 0.0, -1.0],
+      [1.0, 0.0, 0.0]
+    ],
+    "translation": [0.15, -0.2, 1.7],
+    "source_frame": "lidar",
+    "target_frame": "camera"
+  },
+  "point_cloud": {
+    "frame_id": "lidar",
+    "points_xyz": [
+      [10.0, -1.2, 0.4],
+      [10.1, -1.1, 0.5],
+      [9.9, -1.0, 0.3],
+      [18.0, 2.2, 0.2],
+      [18.2, 2.0, 0.3],
+      [17.8, 2.1, 0.4],
+      [24.0, -3.5, 0.0],
+      [24.2, -3.3, 0.2],
+      [23.7, -3.4, 0.1]
+    ],
+    "intensities": [0.8, 0.82, 0.78, 0.6, 0.58, 0.65, 0.4, 0.38, 0.42]
+  },
+  "objects": [
+    {
+      "object_id": "car_01",
+      "label": "car",
+      "position_xyz": [10.0, -1.1, 0.4],
+      "bbox_size_xyz": [4.2, 1.8, 1.6],
+      "detection": {
+        "label": "car",
+        "bbox_xyxy": [1050.0, 650.0, 1220.0, 850.0],
+        "confidence": 0.96,
+        "attributes": {
+          "color": "blue"
+        }
+      }
+    },
+    {
+      "object_id": "ped_01",
+      "label": "pedestrian",
+      "position_xyz": [18.0, 2.1, 0.3],
+      "bbox_size_xyz": [0.8, 0.8, 1.7],
+      "detection": {
+        "label": "pedestrian",
+        "bbox_xyxy": [790.0, 615.0, 845.0, 760.0],
+        "confidence": 0.91,
+        "attributes": {
+          "motion": "walking"
+        }
+      }
+    },
+    {
+      "object_id": "cone_01",
+      "label": "traffic_cone",
+      "position_xyz": [24.0, -3.4, 0.1],
+      "bbox_size_xyz": [0.4, 0.4, 0.7],
+      "detection": {
+        "label": "traffic_cone",
+        "bbox_xyxy": [1110.0, 615.0, 1150.0, 700.0],
+        "confidence": 0.88,
+        "attributes": {
+          "lane_context": "right-shoulder"
+        }
+      }
+    }
+  ]
+}
