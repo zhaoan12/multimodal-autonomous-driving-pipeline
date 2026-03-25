@@ -1,0 +1,8 @@
+{
+  "dataset_manifest": "data/sample/scene_manifest.json",
+  "num_pairs": 3,
+  "provider": "mock",
+  "output_path": "data/generated/qa_pairs.json",
+  "filter_output": true
+}
+

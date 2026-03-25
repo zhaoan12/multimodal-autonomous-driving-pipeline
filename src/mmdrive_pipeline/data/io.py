@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import numpy as np
-
 from mmdrive_pipeline.data.models import (
     CameraIntrinsics,
     Detection2D,
@@ -29,14 +27,17 @@ def load_scene(scene_path: str | Path) -> LabeledScene:
     extrinsics_cfg = payload["lidar_to_camera"]
     intrinsics = CameraIntrinsics(**intrinsics_cfg)
     extrinsics = Extrinsics(
-        rotation=np.array(extrinsics_cfg["rotation"], dtype=float),
-        translation=np.array(extrinsics_cfg["translation"], dtype=float),
+        rotation=tuple(tuple(float(value) for value in row) for row in extrinsics_cfg["rotation"]),
+        translation=tuple(float(value) for value in extrinsics_cfg["translation"]),
         source_frame=extrinsics_cfg.get("source_frame", "lidar"),
         target_frame=extrinsics_cfg.get("target_frame", "camera"),
     )
     point_cloud = LidarPointCloud(
-        points_xyz=np.array(payload["point_cloud"]["points_xyz"], dtype=float),
-        intensities=np.array(payload["point_cloud"]["intensities"], dtype=float)
+        points_xyz=[
+            tuple(float(value) for value in point)
+            for point in payload["point_cloud"]["points_xyz"]
+        ],
+        intensities=[float(value) for value in payload["point_cloud"]["intensities"]]
         if payload["point_cloud"].get("intensities") is not None
         else None,
         frame_id=payload["point_cloud"].get("frame_id", "lidar"),
@@ -79,4 +80,3 @@ def load_scene_collection(manifest_path: str | Path) -> list[LabeledScene]:
     """Load a collection of scenes from a manifest."""
 
     return [load_scene(scene_path) for scene_path in load_dataset_manifest(manifest_path)]
-

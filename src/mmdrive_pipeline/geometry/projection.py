@@ -4,15 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
-
 from mmdrive_pipeline.data.models import (
     CameraIntrinsics,
     LidarPointCloud,
     ProjectedPoint,
 )
-from mmdrive_pipeline.geometry.transforms import transform_points
 from mmdrive_pipeline.data.models import Extrinsics
+from mmdrive_pipeline.geometry.transforms import transform_points
 
 
 @dataclass(slots=True)
@@ -20,8 +18,8 @@ class ProjectionResult:
     """Container for projected points and supporting masks."""
 
     points: list[ProjectedPoint]
-    camera_points_xyz: np.ndarray
-    visible_mask: np.ndarray
+    camera_points_xyz: list[tuple[float, float, float]]
+    visible_mask: list[bool]
 
 
 def project_lidar_to_image(
@@ -34,34 +32,32 @@ def project_lidar_to_image(
     """Project LiDAR points into camera pixels."""
 
     camera_points = transform_points(point_cloud.points_xyz, lidar_to_camera)
-    depths = camera_points[:, 2]
-    valid_depth_mask = depths > min_depth
+    visible_mask = [False] * len(camera_points)
+    points: list[ProjectedPoint] = []
 
-    projected = camera_points[valid_depth_mask] @ intrinsics.matrix().T
-    projected_xy = projected[:, :2] / projected[:, 2:3]
+    for index, camera_point in enumerate(camera_points):
+        x_cam, y_cam, z_cam = camera_point
+        if z_cam <= min_depth:
+            continue
 
-    visible_mask = valid_depth_mask.copy()
-    valid_indices = np.flatnonzero(valid_depth_mask)
-
-    if clip_to_image:
+        pixel_x = (intrinsics.fx * x_cam / z_cam) + intrinsics.cx
+        pixel_y = (intrinsics.fy * y_cam / z_cam) + intrinsics.cy
         in_bounds = (
-            (projected_xy[:, 0] >= 0.0)
-            & (projected_xy[:, 0] < intrinsics.width)
-            & (projected_xy[:, 1] >= 0.0)
-            & (projected_xy[:, 1] < intrinsics.height)
+            0.0 <= pixel_x < intrinsics.width
+            and 0.0 <= pixel_y < intrinsics.height
         )
-        visible_mask[valid_indices] = in_bounds
-        projected_xy = projected_xy[in_bounds]
-        valid_indices = valid_indices[in_bounds]
 
-    points = [
-        ProjectedPoint(
-            pixel_xy=(float(pixel_x), float(pixel_y)),
-            depth=float(depths[index]),
-            point_xyz_lidar=tuple(float(v) for v in point_cloud.points_xyz[index]),
+        if clip_to_image and not in_bounds:
+            continue
+
+        visible_mask[index] = True
+        points.append(
+            ProjectedPoint(
+                pixel_xy=(float(pixel_x), float(pixel_y)),
+                depth=float(z_cam),
+                point_xyz_lidar=tuple(float(v) for v in point_cloud.points_xyz[index]),
+            )
         )
-        for (pixel_x, pixel_y), index in zip(projected_xy, valid_indices, strict=True)
-    ]
 
     return ProjectionResult(
         points=points,
@@ -71,12 +67,12 @@ def project_lidar_to_image(
 
 
 def project_points_xyz(
-    points_xyz: np.ndarray,
+    points_xyz: list[tuple[float, float, float]],
     intrinsics: CameraIntrinsics,
     lidar_to_camera: Extrinsics,
-) -> np.ndarray:
+) -> list[tuple[float, float]]:
     """Convenience projection helper that returns visible pixel coordinates."""
 
     point_cloud = LidarPointCloud(points_xyz=points_xyz)
     result = project_lidar_to_image(point_cloud, intrinsics, lidar_to_camera)
-    return np.array([point.pixel_xy for point in result.points], dtype=float)
+    return [point.pixel_xy for point in result.points]

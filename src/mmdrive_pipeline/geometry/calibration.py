@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
-
 from mmdrive_pipeline.data.models import CameraIntrinsics, Extrinsics
 from mmdrive_pipeline.utils.io import read_yaml
 
@@ -19,15 +17,30 @@ class CalibrationBundle:
     lidar_to_camera: Extrinsics
 
 
-def validate_rotation_matrix(rotation: np.ndarray, atol: float = 1e-5) -> None:
+def validate_rotation_matrix(
+    rotation: tuple[tuple[float, float, float], ...],
+    atol: float = 1e-5,
+) -> None:
     """Validate that a matrix is close to a proper 3D rotation."""
 
-    if rotation.shape != (3, 3):
+    if len(rotation) != 3 or any(len(row) != 3 for row in rotation):
         raise ValueError("Rotation matrix must have shape (3, 3).")
-    identity = np.eye(3, dtype=float)
-    if not np.allclose(rotation @ rotation.T, identity, atol=atol):
-        raise ValueError("Rotation matrix is not orthonormal.")
-    if not np.isclose(np.linalg.det(rotation), 1.0, atol=atol):
+    columns = [tuple(rotation[row][col] for row in range(3)) for col in range(3)]
+    for index, column in enumerate(columns):
+        norm = sum(value * value for value in column)
+        if abs(norm - 1.0) > atol:
+            raise ValueError("Rotation matrix is not orthonormal.")
+        for other_column in columns[index + 1 :]:
+            dot = sum(a * b for a, b in zip(column, other_column, strict=True))
+            if abs(dot) > atol:
+                raise ValueError("Rotation matrix is not orthonormal.")
+
+    determinant = (
+        rotation[0][0] * (rotation[1][1] * rotation[2][2] - rotation[1][2] * rotation[2][1])
+        - rotation[0][1] * (rotation[1][0] * rotation[2][2] - rotation[1][2] * rotation[2][0])
+        + rotation[0][2] * (rotation[1][0] * rotation[2][1] - rotation[1][1] * rotation[2][0])
+    )
+    if abs(determinant - 1.0) > atol:
         raise ValueError("Rotation matrix determinant must be 1.")
 
 
@@ -47,10 +60,13 @@ def load_calibration(path: str | Path) -> CalibrationBundle:
         height=int(intrinsics_cfg["height"]),
     )
 
-    rotation = np.array(extrinsics_cfg["rotation"], dtype=float)
-    translation = np.array(extrinsics_cfg["translation"], dtype=float)
+    rotation = tuple(
+        tuple(float(value) for value in row)
+        for row in extrinsics_cfg["rotation"]
+    )
+    translation = tuple(float(value) for value in extrinsics_cfg["translation"])
     validate_rotation_matrix(rotation)
-    if translation.shape != (3,):
+    if len(translation) != 3:
         raise ValueError("Extrinsic translation must have shape (3,).")
 
     extrinsics = Extrinsics(
@@ -60,4 +76,3 @@ def load_calibration(path: str | Path) -> CalibrationBundle:
         target_frame=extrinsics_cfg.get("target_frame", "camera"),
     )
     return CalibrationBundle(intrinsics=intrinsics, lidar_to_camera=extrinsics)
-

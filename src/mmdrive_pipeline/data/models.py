@@ -5,9 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
-
-ArrayLike = np.ndarray
+Matrix3x3 = tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]
+Vector3 = tuple[float, float, float]
 
 
 @dataclass(slots=True)
@@ -21,14 +20,11 @@ class CameraIntrinsics:
     width: int
     height: int
 
-    def matrix(self) -> ArrayLike:
-        return np.array(
-            [
-                [self.fx, 0.0, self.cx],
-                [0.0, self.fy, self.cy],
-                [0.0, 0.0, 1.0],
-            ],
-            dtype=float,
+    def matrix(self) -> Matrix3x3:
+        return (
+            (self.fx, 0.0, self.cx),
+            (0.0, self.fy, self.cy),
+            (0.0, 0.0, 1.0),
         )
 
 
@@ -36,24 +32,26 @@ class CameraIntrinsics:
 class Extrinsics:
     """Rigid transform from source coordinates into target coordinates."""
 
-    rotation: ArrayLike
-    translation: ArrayLike
+    rotation: Matrix3x3
+    translation: Vector3
     source_frame: str = "lidar"
     target_frame: str = "camera"
 
-    def transform_matrix(self) -> ArrayLike:
-        matrix = np.eye(4, dtype=float)
-        matrix[:3, :3] = self.rotation
-        matrix[:3, 3] = self.translation
-        return matrix
+    def transform_matrix(self) -> tuple[tuple[float, float, float, float], ...]:
+        return (
+            (*self.rotation[0], self.translation[0]),
+            (*self.rotation[1], self.translation[1]),
+            (*self.rotation[2], self.translation[2]),
+            (0.0, 0.0, 0.0, 1.0),
+        )
 
 
 @dataclass(slots=True)
 class LidarPointCloud:
     """LiDAR point set in homogeneous driving coordinates."""
 
-    points_xyz: ArrayLike
-    intensities: ArrayLike | None = None
+    points_xyz: list[Vector3]
+    intensities: list[float] | None = None
     frame_id: str = "lidar"
 
 
@@ -104,4 +102,3 @@ class ProjectedPoint:
     pixel_xy: tuple[float, float]
     depth: float
     point_xyz_lidar: tuple[float, float, float]
-

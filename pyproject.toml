@@ -13,8 +13,6 @@ authors = [
   { name = "OpenAI Codex" }
 ]
 dependencies = [
-  "numpy>=1.26",
-  "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -30,4 +28,3 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

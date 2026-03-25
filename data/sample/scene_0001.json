@@ -47,7 +47,7 @@
       "bbox_size_xyz": [4.2, 1.8, 1.6],
       "detection": {
         "label": "car",
-        "bbox_xyxy": [1050.0, 650.0, 1220.0, 850.0],
+        "bbox_xyxy": [1065.0, 455.0, 1115.0, 495.0],
         "confidence": 0.96,
         "attributes": {
           "color": "blue"
@@ -61,7 +61,7 @@
       "bbox_size_xyz": [0.8, 0.8, 1.7],
       "detection": {
         "label": "pedestrian",
-        "bbox_xyxy": [790.0, 615.0, 845.0, 760.0],
+        "bbox_xyxy": [825.0, 500.0, 855.0, 520.0],
         "confidence": 0.91,
         "attributes": {
           "motion": "walking"
@@ -75,7 +75,7 @@
       "bbox_size_xyz": [0.4, 0.4, 0.7],
       "detection": {
         "label": "traffic_cone",
-        "bbox_xyxy": [1110.0, 615.0, 1150.0, 700.0],
+        "bbox_xyxy": [1110.0, 518.0, 1135.0, 534.0],
         "confidence": 0.88,
         "attributes": {
           "lane_context": "right-shoulder"

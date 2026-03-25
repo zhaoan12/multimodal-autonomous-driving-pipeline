@@ -1,0 +1,7 @@
+{
+  "dataset_manifest": "data/sample/scene_manifest.json",
+  "distance_tolerance_m": 2.0,
+  "min_support_points": 2,
+  "output_path": "data/generated/validation_report.json"
+}
+

@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-import numpy as np
+from statistics import median
 
 from mmdrive_pipeline.data.models import Detection2D, LabeledScene
 from mmdrive_pipeline.geometry.projection import project_lidar_to_image
@@ -48,16 +47,15 @@ def map_detection_to_world(
     if len(support_indices) < min_support_points:
         return None
 
-    camera_support = np.array(
-        [projection.camera_points_xyz[projection.visible_mask][index] for index in support_indices],
-        dtype=float,
-    )
-    lidar_support = np.array(
-        [projection.points[index].point_xyz_lidar for index in support_indices],
-        dtype=float,
-    )
-    representative_camera = np.median(camera_support, axis=0)
-    representative_lidar = np.median(lidar_support, axis=0)
+    visible_camera_points = [
+        point
+        for point, is_visible in zip(projection.camera_points_xyz, projection.visible_mask, strict=True)
+        if is_visible
+    ]
+    camera_support = [visible_camera_points[index] for index in support_indices]
+    lidar_support = [projection.points[index].point_xyz_lidar for index in support_indices]
+    representative_camera = tuple(median(point[axis] for point in camera_support) for axis in range(3))
+    representative_lidar = tuple(median(point[axis] for point in lidar_support) for axis in range(3))
 
     return DetectionMapping(
         detection=detection,
@@ -83,4 +81,3 @@ def map_scene_detections(scene: LabeledScene, min_support_points: int = 3) -> li
         if mapping is not None:
             mappings.append(mapping)
     return mappings
-
